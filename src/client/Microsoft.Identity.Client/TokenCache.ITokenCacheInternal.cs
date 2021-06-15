@@ -780,7 +780,7 @@ namespace Microsoft.Identity.Client
         async Task ITokenCacheInternal.RemoveAccountAsync(IAccount account, RequestContext requestContext)
         {
             requestContext.Logger.Verbose($"[RemoveAccountAsync] Entering token cache semaphore. Count {_semaphoreSlim.CurrentCount}");
-            await _semaphoreSlim.WaitAsync(requestContext.UserCancellationToken).ConfigureAwait(false);
+            await _semaphoreSlim.WaitAsync(requestContext.UserCancellationToken).ConfigureAwait(false);            
             requestContext.Logger.Verbose("[RemoveAccountAsync] Entered token cache semaphore");
 
             try

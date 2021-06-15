@@ -52,8 +52,9 @@ namespace Microsoft.Identity.Client
 
         bool ITokenCacheInternal.UsesDefaultSerialization => _usesDefaultSerialization;
 
-        private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
-        SemaphoreSlim ITokenCacheInternal.Semaphore => _semaphoreSlim;
+        private readonly OptionalSemaphoreSlim _semaphoreSlim;
+        OptionalSemaphoreSlim ITokenCacheInternal.Semaphore => _semaphoreSlim;
+        
         /// <summary>
         /// Constructor of a token cache. This constructor is left for compatibility with MSAL 2.x.
         /// The recommended way to get a cache is by using <see cref="IClientApplicationBase.UserTokenCache"/>
@@ -66,6 +67,9 @@ namespace Microsoft.Identity.Client
 
         internal TokenCache(IServiceBundle serviceBundle, bool isApplicationTokenCache, ICacheSerializationProvider optionalDefaultSerializer = null)
         {
+            // useRealSemaphore= false for MyApps and potentially for all apps when using non-singleton MSAL
+            _semaphoreSlim =  new OptionalSemaphoreSlim(useRealSemaphore: false); 
+
             var proxy = serviceBundle?.PlatformProxy ?? PlatformProxyFactory.CreatePlatformProxy(null);
             _accessor = proxy.CreateTokenCacheAccessor();
             _featureFlags = proxy.GetFeatureFlags();

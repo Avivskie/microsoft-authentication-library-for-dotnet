@@ -11,12 +11,13 @@ using Microsoft.Identity.Client.Cache.Keys;
 using Microsoft.Identity.Client.Internal;
 using Microsoft.Identity.Client.Internal.Requests;
 using Microsoft.Identity.Client.OAuth2;
+using Microsoft.Identity.Client.Utils;
 
 namespace Microsoft.Identity.Client
 {
     internal interface ITokenCacheInternal : ITokenCache, ITokenCacheSerializer
     {
-        SemaphoreSlim Semaphore { get; }
+        OptionalSemaphoreSlim Semaphore { get; }
         ILegacyCachePersistence LegacyPersistence { get; }
         ITokenCacheAccessor Accessor { get; }
 
