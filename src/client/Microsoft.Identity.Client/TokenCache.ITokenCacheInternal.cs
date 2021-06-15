@@ -121,8 +121,8 @@ namespace Microsoft.Identity.Client
                     username,
                     instanceDiscoveryMetadata.PreferredNetwork, 
                     wamAccountIds);
-            requestParams.RequestContext.Logger.Verbose("[SaveTokenResponseAsync] Entering token cache semaphore. ");
-            await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
+            requestParams.RequestContext.Logger.Verbose($"[SaveTokenResponseAsync] Entering token cache semaphore. Count {_semaphoreSlim.CurrentCount}.");
+            await _semaphoreSlim.WaitAsync(requestParams.RequestContext.UserCancellationToken).ConfigureAwait(false);
             requestParams.RequestContext.Logger.Verbose("[SaveTokenResponseAsync] Entered token cache semaphore. ");
 
             try
@@ -196,7 +196,7 @@ namespace Microsoft.Identity.Client
                                 instanceDiscoveryMetadata.PreferredCache);
 
                         CacheFallbackOperations.WriteAdalRefreshToken(
-                            Logger,
+                            requestParams.RequestContext.Logger,
                             LegacyCachePersistence,
                             msalRefreshTokenCacheItem,
                             msalIdTokenCacheItem,
@@ -618,7 +618,7 @@ namespace Microsoft.Identity.Client
                 string.IsNullOrEmpty(familyId))
             {
                 return CacheFallbackOperations.GetRefreshToken(
-                    Logger,
+                    requestParams.RequestContext.Logger,
                     LegacyCachePersistence,
                     aliases,
                     requestParams.AppConfig.ClientId,
@@ -696,7 +696,7 @@ namespace Microsoft.Identity.Client
             if (ServiceBundle.Config.LegacyCacheCompatibilityEnabled)
             {
                 adalUsersResult = CacheFallbackOperations.GetAllAdalUsersForMsal(
-                    Logger,
+                    logger,
                     LegacyCachePersistence,
                     ClientId);
                 allEnvironmentsInCache.UnionWith(adalUsersResult.GetAdalUserEnviroments());
@@ -775,61 +775,13 @@ namespace Microsoft.Identity.Client
             return accounts;
         }
 
-        async Task<IEnumerable<MsalRefreshTokenCacheItem>> ITokenCacheInternal.GetAllRefreshTokensAsync(bool filterByClientId)
-        {            
-            await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
-            try
-            {
-                return GetAllRefreshTokensWithNoLocks(filterByClientId);
-            }
-            finally
-            {
-                _semaphoreSlim.Release();
-            }
-        }
-
-        async Task<IEnumerable<MsalAccessTokenCacheItem>> ITokenCacheInternal.GetAllAccessTokensAsync(bool filterByClientId)
-        {
-            await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
-            try
-            {
-                return GetAllAccessTokensWithNoLocks(filterByClientId);
-            }
-            finally
-            {
-                _semaphoreSlim.Release();
-            }
-        }
-
-        async Task<IEnumerable<MsalIdTokenCacheItem>> ITokenCacheInternal.GetAllIdTokensAsync(bool filterByClientId)
-        {
-            await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
-            try
-            {
-                return GetAllIdTokensWithNoLocks(filterByClientId);
-            }
-            finally
-            {
-                _semaphoreSlim.Release();
-            }
-        }
-
-        async Task<IEnumerable<MsalAccountCacheItem>> ITokenCacheInternal.GetAllAccountsAsync()
-        {
-            await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
-            try
-            {
-                return _accessor.GetAllAccounts();
-            }
-            finally
-            {
-                _semaphoreSlim.Release();
-            }
-        }
+       
 
         async Task ITokenCacheInternal.RemoveAccountAsync(IAccount account, RequestContext requestContext)
         {
-            await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
+            requestContext.Logger.Verbose($"[RemoveAccountAsync] Entering token cache semaphore. Count {_semaphoreSlim.CurrentCount}");
+            await _semaphoreSlim.WaitAsync(requestContext.UserCancellationToken).ConfigureAwait(false);
+            requestContext.Logger.Verbose("[RemoveAccountAsync] Entered token cache semaphore");
 
             try
             {
@@ -858,7 +810,7 @@ namespace Microsoft.Identity.Client
                     tokenCacheInternal.RemoveMsalAccountWithNoLocks(account, requestContext);
                     if (ServiceBundle.Config.LegacyCacheCompatibilityEnabled)
                     {
-                        RemoveAdalUser(account);
+                        RemoveAdalUser(account, requestContext.Logger);
                     }
                 }
                 finally

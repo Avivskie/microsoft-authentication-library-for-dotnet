@@ -38,9 +38,7 @@ namespace Microsoft.Identity.Client
         private readonly IFeatureFlags _featureFlags;
         private readonly ITokenCacheAccessor _accessor;
         private bool _usesDefaultSerialization = false;
-        private volatile bool _hasStateChanged;
-
-        private ICoreLogger Logger => ServiceBundle.ApplicationLogger;
+        private volatile bool _hasStateChanged;        
 
         internal IServiceBundle ServiceBundle { get; }
         internal ILegacyCachePersistence LegacyCachePersistence { get; set; }
@@ -54,11 +52,8 @@ namespace Microsoft.Identity.Client
 
         bool ITokenCacheInternal.UsesDefaultSerialization => _usesDefaultSerialization;
 
-
         private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
-
         SemaphoreSlim ITokenCacheInternal.Semaphore => _semaphoreSlim;
-
         /// <summary>
         /// Constructor of a token cache. This constructor is left for compatibility with MSAL 2.x.
         /// The recommended way to get a cache is by using <see cref="IClientApplicationBase.UserTokenCache"/>
@@ -85,7 +80,7 @@ namespace Microsoft.Identity.Client
 #endif // iOS
 
             IsAppTokenCache = isApplicationTokenCache;
-
+            
             // Must happen last, this code can access things like _accessor and such above.
             ServiceBundle = serviceBundle;
         }
@@ -261,10 +256,10 @@ namespace Microsoft.Identity.Client
             return allRefreshTokens.Any(rt => rt.IsFRT);
         }
 
-        private void RemoveAdalUser(IAccount account)
+        private void RemoveAdalUser(IAccount account, ICoreLogger logger)
         {
             CacheFallbackOperations.RemoveAdalUser(
-                Logger,
+                logger,
                 LegacyCachePersistence,
                 ClientId,
                 account.Username,

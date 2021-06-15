@@ -38,14 +38,7 @@ namespace Microsoft.Identity.Client
             AuthenticationRequestParameters requestParams,
             string familyId = null);
 
-        #endregion
-
-        #region For test
-        Task<IEnumerable<MsalAccessTokenCacheItem>> GetAllAccessTokensAsync(bool filterByClientId);
-        Task<IEnumerable<MsalRefreshTokenCacheItem>> GetAllRefreshTokensAsync(bool filterByClientId);
-        Task<IEnumerable<MsalIdTokenCacheItem>> GetAllIdTokensAsync(bool filterByClientId);
-        Task<IEnumerable<MsalAccountCacheItem>> GetAllAccountsAsync();
-        #endregion
+        #endregion        
 
         void RemoveMsalAccountWithNoLocks(IAccount account, RequestContext requestContext);
 
@@ -76,7 +69,7 @@ namespace Microsoft.Identity.Client
 
         /// <summary>
         /// MSAL adds serialziation for UWP and also for ConfidentialClient app token cache. 
-        /// If the app developer provides their own serialization, this flags is true
+        /// If the app developer provides their own serialization, this flags is false
         /// </summary>
         bool UsesDefaultSerialization { get; }
 

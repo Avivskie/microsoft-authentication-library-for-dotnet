@@ -169,7 +169,7 @@ namespace Microsoft.Identity.Test.Unit.PublicApiTests
             {
                 httpManager.AddInstanceDiscoveryMockHandler();
 
-                ConfidentialClientApplication app = 
+                ConfidentialClientApplication app =
                     ConfidentialClientApplicationBuilder.Create(TestConstants.ClientId)
                                                               .WithClientSecret(TestConstants.ClientSecret)
                                                               .WithHttpManager(httpManager)
@@ -190,7 +190,7 @@ namespace Microsoft.Identity.Test.Unit.PublicApiTests
                 result = await app.AcquireTokenForClient(TestConstants.s_scope.ToArray())
                     .WithAuthority(TestConstants.AuthorityUtid2Tenant)
                     .ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
-                
+
                 Assert.IsNotNull(app.AppTokenCacheInternal.Accessor.GetAllAccessTokens().Single(at => at.TenantId == TestConstants.Utid2));
                 Assert.AreEqual(2, app.InMemoryPartitionedCacheSerializer.CachePartition.Count);
                 Assert.IsTrue(app.InMemoryPartitionedCacheSerializer.CachePartition.Keys.Any(k => k.Contains(TestConstants.Utid)));
@@ -203,7 +203,7 @@ namespace Microsoft.Identity.Test.Unit.PublicApiTests
         public async Task ClientCreds_DefaultSerialization_Async()
         {
             using (var httpManager = new MockHttpManager())
-            {                
+            {
                 httpManager.AddInstanceDiscoveryMockHandler();
 
                 ConfidentialClientApplication app =
@@ -890,7 +890,7 @@ namespace Microsoft.Identity.Test.Unit.PublicApiTests
                     .ExecuteAsync(CancellationToken.None)
                     .ConfigureAwait(false);
 
-                var accessTokens = await app.AppTokenCacheInternal.GetAllAccessTokensAsync(true).ConfigureAwait(false);
+                var accessTokens = app.AppTokenCacheInternal.Accessor.GetAllAccessTokens();
                 var accessTokenInCache = accessTokens
                                          .Where(item => ScopeHelper.ScopeContains(item.ScopeSet, TestConstants.s_scope))
                                          .ToList().FirstOrDefault();
@@ -938,7 +938,7 @@ namespace Microsoft.Identity.Test.Unit.PublicApiTests
                 Assert.AreEqual(TokenRetrievedFromNetCall, result.AccessToken);
 
                 // make sure token in Cache was updated
-                var accessTokens = await app.AppTokenCacheInternal.GetAllAccessTokensAsync(true).ConfigureAwait(false);
+                var accessTokens = app.AppTokenCacheInternal.Accessor.GetAllAccessTokens();
                 var accessTokenInCache = accessTokens
                                          .Where(item => ScopeHelper.ScopeContains(item.ScopeSet, TestConstants.s_scope))
                                          .ToList().FirstOrDefault();
